@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Dilema del Gran Oso Bastián - El Juego</title>
+    <style>
+        :root {
+            --bg-cave: #1a1b29;
+            --text-light: #e2e8f0;
+            --accent-warm: #d97706;
+            --accent-cold: #2563eb;
+            --accent-climax: #06b6d4;
+            --barro: #45322e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f1016;
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            background-color: var(--bg-cave);
+            border: 3px solid #2e3047;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.5s ease;
+        }
+
+        h1 {
+            color: var(--accent-warm);
+            text-align: center;
+            margin-top: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #sound-effect {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid var(--accent-cold);
+            padding: 10px;
+            margin: 15px 0;
+            font-style: italic;
+            text-align: center;
+            min-height: 24px;
+        }
+
+        #story-text {
+            line-height: 1.6;
+            font-size: 16px;
+            margin-bottom: 25px;
+            min-height: 80px;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            background-color: #2e3047;
+            color: var(--text-light);
+            border: 1px solid #45486c;
+            padding: 14px 20px;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #3b3e5c;
+            border-color: var(--accent-warm);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #2e3047;
+            font-size: 14px;
+            color: #8fa0dd;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--accent-climax);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>El Dilema de Bastián</h1>
+    <div id="sound-effect">... El bosque guarda silencio ...</div>
+    <div id="story-text">Cargando la historia del Bosque Susurrante...</div>
+    <div class="options-grid" id="options-container"></div>
+    
+    <div id="stats">
+        <span>Estado de Bastián: <span id="status-bear" class="highlight">Normal</span></span>
+        <span>Entorno: <span id="status-env" class="highlight">Cálido</span></span>
+    </div>
+</div>
+
+<script>
+    // Nodos de la historia interactiva basados en el cuento original
+    const storyNodes = {
+        inicio: {
+            text: "Eres el Gran Oso Bastián. El invierno ha llegado de una forma distinta al Bosque Susurrante. Intentas dormir en tu cueva, pero un sonido constante e insistente no te deja descansar. ¿Qué decides hacer?",
+            sound: "Gota... Gota... Gota...",
+            statusBear: "Inquieto",
+            statusEnv: "Frío",
+            options: [
+                { text: "Intentar cambiar de posición dentro de la cueva", nextNode: "cambiar_posicion" },
+                { text: "Salir antes de lo habitual hacia el río", nextNode: "camino_rio" }
+            ]
+        },
+        cambiar_posicion: {
+            text: "Te mueves una y otra vez buscando un rincón seco dentro de tu cueva. Por un momento crees haber encontrado el lugar perfecto, pero justo cuando comienzas a quedarte dormido, el sonido regresa. El cansancio pesa.",
+            sound: "Gota... Gota... Gota...",
+            statusBear: "Fatigado",
+            statusEnv: "Frío",
+            options: [
+                { text: "Salir de la cueva hacia el río a buscar peces", nextNode: "camino_rio" },
+                { text: "Quedarte e investigar el bosque de noche", nextNode: "noche_lechuza" }
+            ]
+        },
+        camino_rio: {
+            text: "Decides caminar hacia el río siguiendo tu trayecto de siempre, pero algo en el suelo ha cambiado. Donde antes tus patas se hundían suavemente entre hojas secas, ahora te encuentras con un barro espeso que se pega fuertemente a tu pelaje. Avanzar te toma el doble de tiempo.",
+            sound: "Chlof... Chlof... (Barro espeso)",
+            statusBear: "Cubierto de barro",
+            statusEnv: "Tonos Quebrados",
+            options: [
+                { text: "Seguir avanzando pesadamente hasta el borde del río", nextNode: "rio_vacio" },
+                { text: "Dar la vuelta e intentar buscar raíces en los arbustos", nextNode: "buscar_raices" }
+            ]
+        },
+        rio_vacio: {
+            text: "Llegas al agua, pero el río ya no es el mismo. Se ha vuelto notablemente más ancho y lento. Permaneces un largo rato observándolo fijamente, esperando que algo ocurra, pero no ocurre nada. No hay peces en la orilla.",
+            sound: "... Agua lenta y vacía ...",
+            statusBear: "Decepcionado",
+            statusEnv: "Monocromía Grisácea",
+            options: [
+                { text: "Intentar tomar un atajo de verano de regreso a la cueva", nextNode: "atajo_perdido" },
+                { text: "Regresar directamente a la cueva en silencio", nextNode: "regreso_cueva_frustrado" }
+            ]
+        },
+        buscar_raices: {
+            text: "Pasas horas removiendo la tierra cerca de unos arbustos buscando alimento. Encuentras algunas raíces y las pruebas. No están mal... pero sientes que no son suficientes para el invierno. Desde lo alto, unas ardillas te observan con curiosidad sin decir nada.",
+            sound: "Crujido... (Ardillas observando)",
+            statusBear: "Insatisfecho",
+            statusEnv: "Colores Disonantes",
+            options: [
+                { text: "Volver a tu cueva al caer la tarde", nextNode: "regreso_cueva_frustrado" }
+            ]
+        },
+        atajo_perdido: {
+            text: "Intentas tomar el atajo del verano pero el bosque ha cambiado tanto que no lo encuentras. Das vueltas confundido hasta que reconoces un árbol torcido que te sirve de referencia. Te detienes ahí más tiempo de lo necesario pensando que todo está fuera de lugar.",
+            sound: "... Viento frío entre ramas torcidas ...",
+            statusBear: "Confundido",
+            statusEnv: "Desorientado",
+            options: [
+                { text: "Regresar cansado a la entrada de tu cueva", nextNode: "regreso_cueva_frustrado" }
+            ]
+        },
+        regreso_cueva_frustrado: {
+            text: "Regresas a tu cueva al caer la tarde. Te acomodas con cuidado, pensando cada movimiento. Cerras los ojos intentando ignorar el entorno, pero el sonido vuelve con fuerza implacable: Gota. Gota. Gota. Sales nuevamente a mirar el bosque en silencio.",
+            sound: "Gota... Gota... Gota...",
+            statusBear: "Abrumado",
+            statusEnv: "Claroscuro Oscuro",
+            options: [
+                { text: "Sentarte afuera a mirar tus patas con barro y el río a lo lejos", nextNode: "noche_lechuza" }
+            ]
+        },
+        noche_lechuza: {
+            text: "Mientras miras la entrada de tu cueva sin saber qué entender primero, una sabia lechuza se posa en una rama cercana. Te mira con sus ojos brillantes y dice de forma etérea: 'El bosque no siempre cambia de golpe. A veces cambia en pequeñas cosas que dejamos pasar'. En ese instante, un crujido seco atraviesa el bosque.",
+            sound: "¡CRACK! (Viene de la Gran Roca)",
+            statusBear: "Alerta",
+            statusEnv: "Contraste de Saturación",
+            options: [
+                { text: "Girar lentamente la cabeza hacia la Gran Roca", nextNode: "climax" }
+            ]
+        },
+        climax: {
+            text: "Giras la cabeza. Un fragmento de piedra cae justo frente a la entrada de tu cueva. Por primera vez, el sonido deja de ser una gota intermitente... Se convierte en un hilo constante de agua que brota de la fractura. ¡Has descubierto el dilema de la Gran Roca!",
+            sound: "Ruuush... (Hilo constante de agua)",
+            statusBear: "Comprensión Absoluta",
+            statusEnv: "Alto Contraste / Cian Eléctrico",
+            options: [
+                { text: "¡Felicidades! Has completado la historia. Jugar de nuevo", nextNode: "inicio" }
+            ]
+        }
+    };
+
+    function renderNode(nodeKey) {
+        const node = storyNodes[nodeKey];
+        const container = document.getElementById('game-container');
+        
+        // Actualizar textos generales
+        document.getElementById('story-text').innerText = node.text;
+        document.getElementById('sound-effect').innerText = node.sound;
+        document.getElementById('status-bear').innerText = node.statusBear;
+        document.getElementById('status-env').innerText = node.statusEnv;
+
+        // Cambios dinámicos de color basados en la teoría del color del cuento
+        if (nodeKey === 'inicio') {
+            container.style.backgroundColor = "#1a1b29";
+            container.style.borderColor = "#d97706";
+        } else if (nodeKey === 'camino_rio' || nodeKey === 'buscar_raices') {
+            container.style.backgroundColor = "#2b2621"; // Tonos barro / quebrados
+            container.style.borderColor = "#45322e";
+        } else if (nodeKey === 'rio_vacio') {
+            container.style.backgroundColor = "#202a35"; // Monocromía melancólica cian/gris
+            container.style.borderColor = "#4b5563";
+        } else if (nodeKey === 'climax') {
+            container.style.backgroundColor = "#082f49"; // Alto contraste final
+            container.style.borderColor = "#06b6d4";     // Cian eléctrico
+        }
+
+        // Limpiar y renderizar botones de opciones
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        node.options.forEach(option => {
+            const btn = document.createElement('button');
+            btn.innerText = option.text;
+            btn.onclick = () => renderNode(option.nextNode);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // Inicializar el juego en el nodo de inicio
+    window.onload = () => {
+        renderNode('inicio');
+    };
+</script>
+
+</body>
+</html>
